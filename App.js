@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import Start from './components/Start';
 import Chat from './components/Chat';
-
+import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -22,6 +22,7 @@ const App = () => {
           <Stack.Screen
             name="Chat"
             component={Chat}
+            options={({ route }) => ({ title: route.params?.userName || 'Chat' })}
           />
         </Stack.Navigator>
       </NavigationContainer>

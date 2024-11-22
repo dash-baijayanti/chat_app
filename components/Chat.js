@@ -2,14 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
 const Chat = ({ route }) => {
-  const { userName, backgroundColor } = route.params;
+  const { userName = 'Guest', backgroundColor = '#FFFFFF' } = route.params || {};
 
   return (
-    <View>
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-      {/* Your chat UI */}
-    </SafeAreaView>
+    <View style={[styles.container, { backgroundColor }]}>
+      <SafeAreaView >
+        <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
+      </SafeAreaView>
     </View>
   );
 };
