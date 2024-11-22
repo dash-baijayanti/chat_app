@@ -1,26 +1,30 @@
-import { StyleSheet, View, Text } from 'react-native';
-import { useEffect } from 'react';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
-const Chat = (route, navigation) => {
-  const {name} = route.params;
+const Chat = ({ route }) => {
+  const { userName, backgroundColor } = route.params;
 
-  useEffect(() => {
-    navigation.setOptions({ title: name });
-  }, []);
-  
- return (
-   <View style={styles.container}>
-     <Text>Hello!</Text>
-   </View>
- );
-}
+  return (
+    <View>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
+      {/* Your chat UI */}
+    </SafeAreaView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
- container: {
-   flex: 1,
-   justifyContent: 'center',
-   alignItems: 'center'
- }
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 24,
+    color: '#333',
+    fontWeight: 'bold',
+  },
 });
 
 export default Chat;
