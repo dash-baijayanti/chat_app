@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   middle: {
-    flex: 0.5,
+    flex: 0.4,
     backgroundColor: 'beige',
     borderWidth: 1,
     justifyContent: 'space-between',
