@@ -2,12 +2,34 @@ import React from 'react';
 import { useState } from 'react';
 import {ImageBackground, StyleSheet, Text, TextInput, Alert, View, TouchableOpacity} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { getAuth, signInAnonymously } from "firebase/auth";
 
 const image = require('../image/BG3.jpg');
 
 const Start = ({navigation}) => {
   const [userName, setUserName] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
+
+  const auth = getAuth();
+  const signInUser = (selectedColor) => {
+    if (!userName.trim()) {
+      Alert.alert('Name Required', 'Please enter your name to continue!');
+      return;
+    }
+
+    signInAnonymously(auth)
+      .then((result) => {
+        navigation.navigate('Chat', {
+          userID: result.user.uid,
+          userName: userName || 'Guest',
+          backgroundColor: selectedColor || '#FFFFFF',
+        });
+        Alert.alert('Signed in Successfully!');
+      })
+      .catch((error) => {
+        Alert.alert('Unable to sign in, try later again.');
+      });
+  };
 
   const colors = [
     '#FFEB80', // Minion Yellow
@@ -39,7 +61,7 @@ const Start = ({navigation}) => {
             style={[styles.colorCircle, { backgroundColor: color }]}
             onPress={() => {
               setBackgroundColor(color); // Update the selected color
-              navigation.navigate('Chat', { userName, backgroundColor: color }); // Pass both params to Chat
+              // navigation.navigate('Chat', { userName, backgroundColor: color }); // Pass both params to Chat
             }}
          />
         ))}
@@ -49,11 +71,12 @@ const Start = ({navigation}) => {
       <TouchableOpacity
        style={styles.button}
        onPress={() =>{
-        if (!userName.trim()) {
-          Alert.alert('Name Required', 'Please enter your name to continue!');
-          return;
-        }
-       navigation.navigate('Chat', { userName: userName || 'Guest', backgroundColor })
+        signInUser(backgroundColor);
+      //   if (!userName.trim()) {
+      //     Alert.alert('Name Required', 'Please enter your name to continue!');
+      //     return;
+      //   }
+      //  navigation.navigate('Chat', { userName: userName || 'Guest', backgroundColor })
       }}>
       <Text style = {styles.chat}>Start Chatting</Text>
       </TouchableOpacity>

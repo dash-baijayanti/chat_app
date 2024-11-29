@@ -2,39 +2,41 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { collection, getDocs, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 
-
-const Chat = ({ route }) => {
-  const { userName = 'Guest', backgroundColor = '#FFFFFF' } = route.params || {};
+const Chat = ({ route, db, navigation }) => {
+  const { userName = 'Guest', backgroundColor = '#FFFFFF',userID } = route.params || {};
   // const {backgroundColor} = route.params;
   const [messages, setMessages] = useState([]);
 
   console.log(messages);
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      },
-      {
-        _id: 2,
-        text: 'This is a systemmessage',
-        createdAt: new Date(),
-        system: true,
-      },
-    ]);
-  }, []);
-  
-  const onSend = (newMessages) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages))
-  }
+    navigation.setOptions({ title: userName });
+    const q = query(
+      collection(db, "messages"),
+      orderBy("createdAt", "desc")
+    );
+    const unsubMessages = onSnapshot(q, (docs) => {
+      let newMessages = [];
+      docs.forEach(doc => {
+        newMessages.push({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: new Date(doc.data().createdAt.toMillis())
+        })
+      })
+      setMessages(newMessages);
+    })
+    return () => {
+      if (unsubMessages) unsubMessages();
+    }
+   }, []);
+
+   const onSend = (newMessages) => {
+    addDoc(collection(db, "messages"), newMessages[0])
+   }
+ 
 
   const renderBubble = (props) => {
     return ( 
@@ -58,8 +60,15 @@ const Chat = ({ route }) => {
       renderBubble={renderBubble}
       onSend={messages => onSend(messages)}
       user={{
-        _id: 1
+        _id: userID,
+        name: userName,
       }}
+      renderAvatarOnTop={true}
+      showUserAvatar={true}
+      textInputProps={{
+        placeholderTextColor: 'gray',
+      }}
+      style={{ backgroundColor: backgroundColor }}
     />
       {Platform.OS === 'android' ? 
       <KeyboardAvoidingView behavior='height' /> : null 
