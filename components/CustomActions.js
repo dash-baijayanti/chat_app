@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 // import MapView from 'react-native-maps';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 // import { getStorage } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
 
 
 const CustomActions = ({ wrapperStyle, iconTextStyle, onSend, storage, userID }) => {
@@ -84,20 +85,40 @@ const CustomActions = ({ wrapperStyle, iconTextStyle, onSend, storage, userID })
     }
   }
 
+  // const handleLocation = (latitude, longitude) => {
+  //   const locationMessage = {
+  //     _id: Math.random().toString(),
+  //     createdAt: new Date(),
+  //     user: { _id: userID, name: userName },
+  //     location: { latitude, longitude },  // Ensure location data is correctly assigned here
+  //   };
+  //   onSend([locationMessage]);
+  // };
+
   const getLocation = async () => {
     let permissions = await Location.requestForegroundPermissionsAsync();
     if (permissions?.granted) {
       const location = await Location.getCurrentPositionAsync({});
       if (location) {
-        onSend({
-          location: {
-            longitude: location.coords.longitude,
-            latitude: location.coords.latitude,
+        const locationMessage = {
+          _id: uuidv4(), // Generate unique ID
+          createdAt: new Date(),
+          user: {
+            _id: userID,
           },
-        });
-      } else Alert.alert("Error occurred while fetching location");
-    } else Alert.alert("Permissions haven't been granted.");
-  }
+          location: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          },
+        };
+        onSend([locationMessage]); // Send as an array
+      } else {
+        Alert.alert("Error occurred while fetching location");
+      }
+    } else {
+      Alert.alert("Permissions haven't been granted.");
+    }
+  };
 
   return (
     <TouchableOpacity style={styles.container}
