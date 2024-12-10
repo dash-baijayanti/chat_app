@@ -17,17 +17,6 @@ import { useEffect } from 'react';
 
 const App = () => {
 
-  const connectionStatus = useNetInfo();
-
-  useEffect(() => {
-    if (connectionStatus.isConnected === false) {
-      Alert.alert("Connection Lost!");
-      disableNetwork(db);
-    } else if (connectionStatus.isConnected === true) {
-      enableNetwork(db);
-    }
-  }, [connectionStatus.isConnected]);
-
   // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyDGOXyJr0e2OeXgfDN9H9F12D28D_DmEDc",
@@ -45,6 +34,17 @@ const App = () => {
   const db = getFirestore(app);
 
   const storage = getStorage(app);
+
+  const connectionStatus = useNetInfo();
+
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert("Connection Lost!");
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
 
 
   const Stack = createNativeStackNavigator();
@@ -64,7 +64,7 @@ const App = () => {
         <Stack.Screen
           name="Chat"
           // component={Chat}
-          // options={({ route }) => ({ title: route.params?.userName || "Chat" })}
+          options={({ route }) => ({ title: route.params?.userName || "Chat" })}
         >
           {props => <Chat
             isConnected={connectionStatus.isConnected}

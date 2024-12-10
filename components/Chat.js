@@ -5,7 +5,6 @@ import { collection, query, orderBy, onSnapshot, addDoc } from "firebase/firesto
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomActions from './CustomActions';
 import MapView from 'react-native-maps';
-import { v4 as uuidv4 } from 'uuid';
 
 const Chat = ({ route, db, navigation, isConnected, storage }) => {
   const { userName = 'Guest', backgroundColor = '#FFFFFF', userID } = route.params || {};
@@ -33,8 +32,9 @@ const Chat = ({ route, db, navigation, isConnected, storage }) => {
         }));
 
         // Update messages and cache them
-        setMessages(newMessages);
         cacheMessages(newMessages);
+        setMessages(newMessages);
+
       });
     } else {
       // Load cached messages
@@ -67,20 +67,13 @@ const Chat = ({ route, db, navigation, isConnected, storage }) => {
     }
   };
 
-  // const onSend = async (newMessages) => {
-  //   try {
-  //     await addDoc(collection(db, "messages"), {
-  //       ...newMessages[0],
-  //       createdAt: new Date(),
-  //     });
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //   }
-  // };
-
   const onSend = (newMessages) => {
-    addDoc(collection(db, "messages"), newMessages[0])
-  }
+    try {
+      addDoc(collection(db, "messages"), newMessages[0]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
 
   const renderBubble = (props) => (
     <Bubble
@@ -106,77 +99,62 @@ const Chat = ({ route, db, navigation, isConnected, storage }) => {
   };
 
   const renderCustomActions = (props) => {
-    return (
-      <CustomActions
-        userID={userID}
-        storage={storage}
-        onSend={(newMessages) => {
-          newMessages.forEach((msg) => {
-            const messageToSave = {
-              ...msg,
-              createdAt: new Date(),
-            };
-            addDoc(collection(db, "messages"), messageToSave); // Save each message to Firestore
-          });
-        }}
-        {...props}
-      />
-    );
-
-    const renderCustomView = (props) => {
-      const { currentMessage } = props;
-      if (currentMessage.location) {
-        return (
-          <MapView
-            style={{
-              width: 150,
-              height: 100,
-              borderRadius: 13,
-              margin: 3
-            }}
-            region={{
-              latitude: currentMessage.location.latitude,
-              longitude: currentMessage.location.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-          />
-        );
-      }
-      return null;
-    }
-
-
-    return (
-      <View style={[styles.container, { backgroundColor }]}>
-        <GiftedChat
-          messages={messages}
-          renderBubble={renderBubble}
-          renderInputToolbar={renderInputToolbar} // Attach the custom InputToolbar
-          onSend={messages => onSend(messages)}
-          renderActions={renderCustomActions}
-          renderCustomView={renderCustomView}
-          user={{
-            _id: userID,
-            name: userName,
-          }}
-        // renderAvatarOnTop={true}
-        // showUserAvatar={true}
-        // textInputProps={{
-        //   placeholderTextColor: 'gray',
-        // }}
-        // style={{ backgroundColor: backgroundColor }}
-        />
-        {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
-      </View>
-    );
+    return <CustomActions onSend={onSend} userID={userID} storage={storage} {...props} />;
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-  });
-}
+  const renderCustomView = (props) => {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{
+            width: 150,
+            height: 100,
+            borderRadius: 13,
+            margin: 3
+          }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  }
 
-  export default Chat ;
+
+  return (
+    <View style={[styles.container, { backgroundColor }]}>
+      <GiftedChat
+        messages={messages}
+        renderBubble={renderBubble}
+        renderInputToolbar={renderInputToolbar} // Attach the custom InputToolbar
+        onSend={messages => onSend(messages)}
+        renderActions={renderCustomActions}
+        renderCustomView={renderCustomView}
+        user={{
+          _id: userID,
+          name: userName,
+        }}
+      // renderAvatarOnTop={true}
+      // showUserAvatar={true}
+      // textInputProps={{
+      //   placeholderTextColor: 'gray',
+      // }}
+      // style={{ backgroundColor: backgroundColor }}
+      />
+      {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+export default Chat;
