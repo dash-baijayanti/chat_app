@@ -5,6 +5,7 @@ import { collection, query, orderBy, onSnapshot, addDoc } from "firebase/firesto
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomActions from './CustomActions';
 import MapView from 'react-native-maps';
+import { v4 as uuidv4 } from 'uuid';
 
 const Chat = ({ route, db, navigation, isConnected, storage }) => {
   const { userName = 'Guest', backgroundColor = '#FFFFFF', userID } = route.params || {};
@@ -99,7 +100,18 @@ const Chat = ({ route, db, navigation, isConnected, storage }) => {
   };
 
   const renderCustomActions = (props) => {
-    return <CustomActions onSend={onSend} userID={userID} storage={storage} {...props} />;
+    return <CustomActions userID={userID} storage={storage} onSend={(newMessages => {
+
+      onSend([{
+        ...newMessages,
+        _id: uuidv4(),
+        createdAt: new Date (),
+        user: {
+          _id: userID,
+          name: userName
+        }
+    }])
+    })} {...props}/>;
   };
 
   const renderCustomView = (props) => {
@@ -139,12 +151,6 @@ const Chat = ({ route, db, navigation, isConnected, storage }) => {
           _id: userID,
           name: userName,
         }}
-      // renderAvatarOnTop={true}
-      // showUserAvatar={true}
-      // textInputProps={{
-      //   placeholderTextColor: 'gray',
-      // }}
-      // style={{ backgroundColor: backgroundColor }}
       />
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
     </View>
